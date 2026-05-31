@@ -1,0 +1,392 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self' https:; img-src 'self' data:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
+    />
+    <title>ObraPrime 27 | Ledger</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#impactForm">Ir para o registro de impacto</a>
+
+    <header class="topbar">
+      <div class="brand-lockup">
+        <strong>ObraPrime 27</strong>
+        <span class="theme-pill">Tema 27 - Base exclusiva</span>
+        <span data-i18n="tagline">Ledger para impermeabilização crítica e conformidade de obras</span>
+      </div>
+      <div class="topbar-actions">
+        <label class="language-control">
+          <span data-i18n="languageLabel">Idioma</span>
+          <select id="languageSelect" aria-label="Selecionar idioma">
+            <option value="pt">BR · PT</option>
+            <option value="en">US · EN</option>
+            <option value="es">ES · ES</option>
+            <option value="fr">FR · FR</option>
+            <option value="zh">CN · ZH</option>
+          </select>
+        </label>
+        <button id="simpleMode" type="button" class="ghost">Modo simples</button>
+        <button id="connectWallet" type="button" data-i18n="connectWallet">Conectar carteira</button>
+      </div>
+    </header>
+
+    <nav class="app-nav" aria-label="Navegação principal">
+      <button type="button" class="active" data-view-target="overview" data-i18n="navOverview">Visão geral</button>
+      <button type="button" data-view-target="register" data-i18n="navRegister">Registrar</button>
+      <button type="button" data-view-target="audit" data-i18n="navAudit">Auditar</button>
+      <button type="button" data-view-target="intelligence" data-i18n="navIntelligence">Inteligência</button>
+      <button type="button" data-view-target="verify" data-i18n="navVerify">Verificar</button>
+      <button type="button" data-view-target="method" data-i18n="navMethod">Metodologia</button>
+      <button type="button" data-view-target="game">EcoBots</button>
+    </nav>
+    <p id="globalStatus" class="global-status" role="status" aria-live="polite">Base Tema 27 pronta para registrar, validar e auditar execução de obra.</p>
+
+    <main>
+      <section class="view active" data-view="overview">
+        <section class="hero">
+          <div class="hero-copy">
+            <p class="eyebrow" data-i18n="eyebrow">Foco principal: registrar, validar e certificar impacto</p>
+            <h1 data-i18n="heroTitle">Transforme contratos de impacto em provas públicas verificáveis.</h1>
+            <p data-i18n="heroText">
+              Uma infraestrutura leve para registrar entregas sociais, ambientais e comunitárias,
+              validar evidências e emitir certificados auditáveis por smart contract.
+            </p>
+            <div class="actions hero-actions">
+              <button type="button" data-view-target="register" data-i18n="startRegister">Registrar nova ação</button>
+              <button type="button" class="secondary" data-view-target="audit" data-i18n="viewHistory">Ver histórico</button>
+            </div>
+          </div>
+          <div class="proof-panel">
+            <span class="panel-label" data-i18n="auditableImpact">Impacto auditável</span>
+            <strong id="totalActions">0</strong>
+            <small data-i18n="registeredActions">ações registradas nesta demonstração</small>
+          </div>
+        </section>
+
+        <section class="focus-flow" aria-label="Fluxo principal da aplicação">
+          <article>
+            <span>1</span>
+            <strong>Registrar</strong>
+            <p>Ação, métrica, território e evidência.</p>
+          </article>
+          <article>
+            <span>2</span>
+            <strong>Validar</strong>
+            <p>Confirmação por responsável autorizado.</p>
+          </article>
+          <article>
+            <span>3</span>
+            <strong>Certificar</strong>
+            <p>Prova auditável com hash e histórico.</p>
+          </article>
+        </section>
+
+        <section class="governance-strip" aria-label="Módulos da plataforma">
+          <article>
+            <span>01</span>
+            <strong data-i18n="moduleContract">Contrato configurável</strong>
+            <p data-i18n="moduleContractText">Regras por município, secretaria, edital, empresa ou campanha.</p>
+          </article>
+          <article>
+            <span>02</span>
+            <strong data-i18n="moduleEvidence">Evidência verificável</strong>
+            <p data-i18n="moduleEvidenceText">Hash on-chain e documentos off-chain para auditoria objetiva.</p>
+          </article>
+          <article>
+            <span>03</span>
+            <strong data-i18n="moduleCertificate">Certificação automática</strong>
+            <p data-i18n="moduleCertificateText">Reconhecimento emitido quando a validação mínima é atingida.</p>
+          </article>
+        </section>
+
+        <section class="metrics">
+          <article>
+            <span id="kgMetric">0</span>
+            <p data-i18n="wasteRemoved">kg de resíduos removidos</p>
+          </article>
+          <article>
+            <span id="certMetric">0</span>
+            <p data-i18n="certificatesIssued">certificados emitidos</p>
+          </article>
+          <article>
+            <span>2</span>
+            <p data-i18n="minimumValidations">validações mínimas por certificado</p>
+          </article>
+        </section>
+      </section>
+
+      <section class="view" data-view="register">
+        <form id="impactForm" class="form-panel narrow-panel">
+          <div class="section-title">
+            <span>1</span>
+            <div>
+              <h2 data-i18n="newRecord">Novo registro</h2>
+              <p data-i18n="newRecordHelp">Preencha a ação realizada e anexe uma referência de evidência.</p>
+            </div>
+          </div>
+          <label>
+            <span data-i18n="territoryLabel">Contrato ou território</span>
+            <input name="territory" value="Hospital Publico Central - Bloco B" required />
+            <small data-i18n="territoryHelp">Exemplo: nome do contrato, bairro, escola, secretaria ou campanha.</small>
+          </label>
+          <label>
+            <span data-i18n="actionTypeLabel">Tipo de ação</span>
+            <select name="actionType">
+              <option>Impermeabilização crítica de cobertura</option>
+              <option>Correção de pontos de infiltração</option>
+              <option>Inspeção preventiva de junta estrutural</option>
+              <option>Reforço localizado em área técnica</option>
+              <option>Entrega auditável de pacote de reforma</option>
+            </select>
+          </label>
+          <div class="inline-fields">
+            <label>
+              <span data-i18n="metricLabel">Métrica</span>
+              <select name="metricUnit">
+                <option value="kg_residuo_removido">m² tratados</option>
+                <option value="pontos_criticos_tratados">pontos de infiltração sanados</option>
+                <option value="familias_alcancadas">unidades protegidas</option>
+                <option value="horas_voluntarias">horas técnicas mobilizadas</option>
+              </select>
+            </label>
+            <label>
+              <span data-i18n="valueLabel">Valor</span>
+              <input name="metricValue" type="number" min="1" value="140" required />
+            </label>
+          </div>
+          <label>
+            <span data-i18n="evidenceLinkLabel">Link da evidência</span>
+            <input name="evidenceURI" value="ipfs://bafy-obraprime27-hospital-demo" required />
+            <small data-i18n="evidenceLinkHelp">Pode ser IPFS, pasta pública, repositório documental ou link de auditoria.</small>
+          </label>
+          <label>
+            <span data-i18n="evidenceSummaryLabel">Resumo da evidência</span>
+            <textarea name="evidenceSummary" required>Laudo técnico, relatório fotográfico, medição executada e validação do engenheiro responsável e do fiscal do contrato.</textarea>
+          </label>
+          <div class="actions">
+            <button type="submit" data-i18n="submitImpact">Registrar impacto</button>
+            <button id="seedDemo" type="button" class="secondary" data-i18n="loadExample">Ver exemplo pronto</button>
+            <button type="button" class="ghost" data-view-target="audit" data-i18n="goAudit">Ir para auditoria</button>
+          </div>
+          <p id="walletStatus" class="status" role="status" aria-live="polite">
+            Modo demonstração ativo. Conecte a MetaMask para verificar sua carteira; após o deploy, o envio on-chain será habilitado.
+          </p>
+        </form>
+      </section>
+
+      <section class="view" data-view="audit">
+        <section class="ledger-panel wide-panel">
+          <div class="ledger-header">
+            <div class="section-title compact">
+              <span>2</span>
+              <div>
+                <h2 data-i18n="auditableHistory">Histórico auditável</h2>
+                <p data-i18n="auditableHistoryHelp">Valide registros e acompanhe certificados emitidos.</p>
+              </div>
+            </div>
+            <div class="actions">
+              <button type="button" class="secondary" data-view-target="register" data-i18n="newRecord">Novo registro</button>
+              <button id="clearDemo" type="button" class="ghost" data-i18n="clear">Limpar</button>
+            </div>
+          </div>
+          <div class="filters" aria-label="Filtros do histórico">
+            <label>
+              <span data-i18n="searchLabel">Buscar</span>
+              <input id="searchFilter" type="search" placeholder="Contrato, ação ou evidência" />
+            </label>
+            <label>
+              <span data-i18n="statusLabel">Status</span>
+              <select id="statusFilter">
+                <option value="all">Todos</option>
+                <option value="0">Enviado</option>
+                <option value="1">Validado</option>
+                <option value="2">Certificado</option>
+                <option value="3">Rejeitado</option>
+              </select>
+            </label>
+            <label>
+              <span data-i18n="metricLabel">Métrica</span>
+              <select id="metricFilter">
+                <option value="all">Todas</option>
+                <option value="kg_residuo_removido">Resíduos</option>
+                <option value="pontos_criticos_tratados">Pontos críticos</option>
+                <option value="familias_alcancadas">Famílias</option>
+                <option value="horas_voluntarias">Voluntariado</option>
+              </select>
+            </label>
+          </div>
+          <div id="ledgerList" class="ledger-list" aria-live="polite"></div>
+        </section>
+      </section>
+
+      <section class="view" data-view="intelligence">
+        <section class="insights standalone">
+          <article class="strategy-panel">
+            <div class="section-title compact">
+              <span>3</span>
+              <div>
+                <h2 data-i18n="impactIntelligence">Inteligência de impacto</h2>
+                <p data-i18n="impactIntelligenceHelp">Resumo estratégico para governança, pagamento, garantia e compliance.</p>
+              </div>
+            </div>
+            <div class="score-grid">
+              <div>
+                <strong id="impactScore">0</strong>
+                <p data-i18n="impactScore">Pontuação de impacto</p>
+              </div>
+              <div>
+                <strong id="auditRate">0%</strong>
+                <p data-i18n="auditRate">Taxa certificada</p>
+              </div>
+              <div>
+                <strong id="benefitEstimate">R$ 0</strong>
+                <p data-i18n="socialValue">Valor social estimado</p>
+              </div>
+            </div>
+          </article>
+
+          <article class="ranking-panel">
+            <div class="section-title compact">
+              <span>4</span>
+              <div>
+                <h2 data-i18n="auditableRanking">Ranking auditável</h2>
+                <p data-i18n="auditableRankingHelp">Contratos e territórios com maior impacto validado.</p>
+              </div>
+            </div>
+            <ol id="rankingList" class="ranking-list"></ol>
+          </article>
+        </section>
+      </section>
+
+      <section class="view" data-view="verify">
+        <section class="verification-panel wide-panel">
+          <div class="section-title compact">
+            <span>5</span>
+            <div>
+              <h2 data-i18n="proofVerifierTitle">Verificador de autenticidade</h2>
+              <p data-i18n="proofVerifierText">Cole um comprovante copiado do histórico para verificar se ele mantém o mesmo hash de evidência.</p>
+            </div>
+          </div>
+          <label>
+            <span data-i18n="proofLabel">Comprovante auditável</span>
+            <textarea id="proofInput" placeholder="Cole aqui o comprovante JSON"></textarea>
+          </label>
+          <div class="actions">
+            <button id="verifyProof" type="button" data-i18n="verifyProof">Verificar comprovante</button>
+            <button id="clearProof" type="button" class="ghost" data-i18n="clearProof">Limpar comprovante</button>
+            <button type="button" class="secondary" data-view-target="audit" data-i18n="backHistory">Voltar ao histórico</button>
+          </div>
+          <p id="proofResult" class="status" role="status" aria-live="polite">Nenhum comprovante verificado ainda.</p>
+        </section>
+      </section>
+
+      <section class="view" data-view="method">
+        <section class="method-panel wide-panel" aria-label="Metodologia de impacto">
+          <div class="section-title compact">
+            <span>IMM</span>
+            <div>
+              <h2 data-i18n="methodTitle">Metodologia de impacto</h2>
+              <p data-i18n="methodText">O fluxo combina Teoria da Mudança, IRIS+ e SROI: definir a ação, medir evidência, validar, certificar e usar os dados para decisão.</p>
+            </div>
+          </div>
+          <ul class="reference-list">
+            <li>
+              <strong>Teoria da Mudança</strong>
+              <span>Serviço -> evidência -> validação -> certificado -> decisão. Na base ObraPrime 27, cada registro declara escopo, métrica e prova técnica.</span>
+            </li>
+            <li>
+              <strong>W3C Verifiable Credentials 2.0</strong>
+              <span>Base para pensar comprovantes digitais verificáveis por emissor, titular e verificador.</span>
+              <a href="https://www.w3.org/TR/vc-data-model/" target="_blank" rel="noreferrer">w3.org/TR/vc-data-model</a>
+            </li>
+            <li>
+              <strong>GIIN IRIS+</strong>
+              <span>Referência para padronizar métricas de impacto e tornar resultados comparáveis.</span>
+              <a href="https://iris.thegiin.org/standards/" target="_blank" rel="noreferrer">iris.thegiin.org/standards</a>
+            </li>
+            <li>
+              <strong>Social Value International</strong>
+              <span>Base conceitual para medir e gerir valor social com transparência.</span>
+              <a href="https://www.socialvalueint.org/standards-and-guidance" target="_blank" rel="noreferrer">socialvalueint.org/standards-and-guidance</a>
+            </li>
+            <li>
+              <strong>UK Social Value Model</strong>
+              <span>Referência internacional de valor social aplicado à contratação pública.</span>
+              <a href="https://www.crowncommercial.gov.uk/social-value/what-is-social-value" target="_blank" rel="noreferrer">crowncommercial.gov.uk/social-value</a>
+            </li>
+            <li>
+              <strong>OpenZeppelin Access Control</strong>
+              <span>Referência técnica para controle de permissões em smart contracts.</span>
+              <a href="https://docs.openzeppelin.com/contracts/4.x/access-control" target="_blank" rel="noreferrer">docs.openzeppelin.com/contracts/4.x/access-control</a>
+            </li>
+          </ul>
+          <div class="method-actions">
+            <button id="refreshMethodology" type="button" class="secondary" data-i18n="refreshMethodology">Verificar referências oficiais</button>
+            <p id="methodologyStatus" class="status">Referências locais carregadas. Com internet, a aplicação confirma links oficiais.</p>
+          </div>
+        </section>
+      </section>
+
+      <section class="view" data-view="game">
+        <section class="game-panel wide-panel" aria-label="Jogo educativo EcoBots">
+          <div class="section-title compact">
+            <span>BOT</span>
+            <div>
+              <h2>EcoBots Lab</h2>
+              <p>Um jogo leve para treinar pensamento ambiental: mova o robô, restaure pontos críticos e construa um território mais limpo.</p>
+            </div>
+          </div>
+
+          <div class="game-explainer">
+            <strong>Por que este jogo existe?</strong>
+            <p>
+              O EcoBots Lab transforma educação ambiental em uma experiência prática: cada movimento ensina prevenção,
+              cuidado com recursos e restauração territorial. Ele não usa aposta, moeda, pressão ou recompensa viciante.
+              O objetivo é construir consciência e, ao final, registrar o aprendizado como impacto educativo auditável.
+            </p>
+          </div>
+
+          <div class="game-layout">
+            <div>
+              <div id="gameBoard" class="game-board" role="grid" aria-label="Mapa ambiental com robô, resíduos, árvores e energia limpa"></div>
+              <div class="game-controls" aria-label="Controles do robô">
+                <button type="button" data-move="up">↑</button>
+                <button type="button" data-move="left">←</button>
+                <button type="button" data-move="down">↓</button>
+                <button type="button" data-move="right">→</button>
+              </div>
+            </div>
+
+            <aside class="game-side">
+              <strong>Missão</strong>
+              <p>Restaure o mapa sem pressa. Cada ação ensina prevenção, cuidado e responsabilidade.</p>
+              <dl>
+                <dt>Pontos de impacto</dt>
+                <dd id="gameScore">0</dd>
+                <dt>Energia do robô</dt>
+                <dd id="gameEnergy">12</dd>
+                <dt>Construção</dt>
+                <dd id="gameBuild">Base verde inicial</dd>
+              </dl>
+              <div class="actions">
+                <button id="restartGame" type="button">Reiniciar missão</button>
+                <button id="recordGameImpact" type="button" class="secondary">Registrar impacto do jogo</button>
+              </div>
+              <p id="gameStatus" class="status" role="status" aria-live="polite">Use as setas do teclado ou os botões para mover o robô.</p>
+            </aside>
+          </div>
+        </section>
+      </section>
+    </main>
+    <div id="toastRegion" class="toast-region" aria-live="polite" aria-label="Notificações"></div>
+
+    <script src="runtime-config.js"></script>
+    <script src="vendor/ethers.umd.min.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

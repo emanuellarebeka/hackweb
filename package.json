@@ -1,0 +1,21 @@
+{
+  "name": "obraprime27-ledger",
+  "version": "1.0.0",
+  "description": "MVP HackWeb Desafio 3: registros auditáveis de impermeabilização crítica, manutenção estrutural preventiva e conformidade de obras com smart contracts.",
+  "private": true,
+  "scripts": {
+    "test": "hardhat test",
+    "test:frontend": "node scripts/smoke-frontend.js",
+    "compile": "hardhat compile",
+    "prepare:app-config": "node scripts/generate-runtime-config.js",
+    "deploy:localhost": "hardhat run scripts/deploy.js --network localhost",
+    "deploy:sepolia": "hardhat run scripts/deploy.js --network sepolia",
+    "deploy:mainnet": "hardhat run scripts/deploy.js --network mainnet",
+    "app": "npm run prepare:app-config && npx http-server app -p 5173 -c-1"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^6.1.2",
+    "hardhat": "^2.28.0",
+    "http-server": "^14.1.1"
+  }
+}
