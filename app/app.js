@@ -516,8 +516,7 @@ function loadStoredRecords(account = "") {
 }
 
 function reloadRecordsForCurrentMode() {
-  state.records = loadStoredRecords();
-  save();
+  state.records = loadStoredRecords(state.account);
   render();
 }
 
