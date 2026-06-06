@@ -762,6 +762,12 @@ textarea {
   margin: 0;
 }
 
+.record-summary {
+  color: var(--ink);
+  line-height: 1.45;
+  margin: 0 0 12px;
+}
+
 .record-topline {
   align-items: start;
   display: flex;
@@ -830,11 +836,7 @@ textarea {
 }
 
 .record dl dt:nth-of-type(1),
-.record dl dd:nth-of-type(1),
-.record dl dt:nth-of-type(5),
-.record dl dd:nth-of-type(5),
-.record dl dt:nth-of-type(6),
-.record dl dd:nth-of-type(6) {
+.record dl dd:nth-of-type(1) {
   display: none;
 }
 
@@ -848,6 +850,15 @@ textarea {
 .record-actions button {
   flex: 1 1 160px;
   min-height: 40px;
+}
+
+.record-actions .link-button {
+  align-items: center;
+  display: inline-flex;
+  flex: 1 1 160px;
+  justify-content: center;
+  min-height: 40px;
+  text-decoration: none;
 }
 
 .record .record-actions .secondary,

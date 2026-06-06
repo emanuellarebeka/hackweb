@@ -1074,6 +1074,21 @@ function shortenAddress(address) {
   return `${address.slice(0, 6)}...${address.slice(-4)}`;
 }
 
+function shortenHash(hash) {
+  const value = String(hash || "");
+  if (value.length <= 18) return value;
+  return `${value.slice(0, 10)}...${value.slice(-8)}`;
+}
+
+function getExplorerTxUrl(chainId, txHash) {
+  if (!/^0x[0-9a-fA-F]{64}$/.test(String(txHash || ""))) return "";
+  const explorers = {
+    1: "https://etherscan.io/tx/",
+    11155111: "https://sepolia.etherscan.io/tx/"
+  };
+  return explorers[Number(chainId)] ? `${explorers[Number(chainId)]}${txHash}` : "";
+}
+
 async function getNetworkLabel(provider) {
   const network = provider ? await provider.getNetwork() : null;
   const injectedProvider = getInjectedProvider();
@@ -1116,6 +1131,7 @@ function renderRecord(record) {
   const localizedStatuses = t("statuses");
   const status = localizedStatuses[record.status] || localizedStatuses[0] || statusNames[0];
   const metric = metricLabels[record.metricUnit] || record.metricUnit;
+  const txUrl = getExplorerTxUrl(record.chainId, record.txHash);
   const history = (record.history || [])
     .map((entry) => `<li>${escapeHtml(entry.label || entry.message || "")}</li>`)
     .join("");
@@ -1139,13 +1155,14 @@ function renderRecord(record) {
         </div>
         <span class="status-badge">${status}</span>
       </div>
+      ${record.evidenceSummary ? `<p class="record-summary">${escapeHtml(record.evidenceSummary)}</p>` : ""}
       <dl>
         <dt>${t("contract")}</dt><dd>${escapeHtml(record.territory)}</dd>
         <dt>${t("metricLabel")}</dt><dd>${escapeHtml(record.metricValue)} ${escapeHtml(metric)}</dd>
         <dt>${t("statusLabel")}</dt><dd>${escapeHtml(record.validationCount)}/2 ${t("validationText")}</dd>
         <dt>${t("evidence")}</dt><dd>${escapeHtml(record.evidenceURI)}</dd>
-        <dt>Hash</dt><dd>${escapeHtml(record.evidenceHash)}</dd>
-        <dt>${t("transaction")}</dt><dd>${escapeHtml(record.txHash || "demonstração-local")}</dd>
+        <dt>Hash</dt><dd>${escapeHtml(shortenHash(record.evidenceHash))}</dd>
+        <dt>${t("transaction")}</dt><dd>${escapeHtml(record.txHash ? shortenHash(record.txHash) : "demonstração-local")}</dd>
       </dl>
       ${
         record.showPath
@@ -1157,6 +1174,8 @@ function renderRecord(record) {
         ${record.status === 1 ? `<button type="button" class="secondary" data-certify="${record.id}">${t("certify")}</button>` : ""}
         ${(record.status === 0 || record.status === 1) ? `<button type="button" class="ghost" data-reject="${record.id}">${t("reject")}</button>` : ""}
         ${record.status === 3 ? `<button type="button" class="ghost" data-reactivate="${record.id}">${t("reactivate")}</button>` : ""}
+        <button type="button" class="ghost" data-copy="${record.id}">${t("copyHash")}</button>
+        ${txUrl ? `<a class="ghost link-button" href="${escapeHtml(txUrl)}" target="_blank" rel="noreferrer">Ver transação</a>` : ""}
       </div>
     </article>
   `;
@@ -1285,8 +1304,10 @@ async function submitLocal(formData) {
     actionType: formData.get("actionType"),
     metricUnit: formData.get("metricUnit"),
     metricValue: Number(metricValueText),
+    evidenceSummary: String(formData.get("evidenceSummary") || "").trim(),
     evidenceURI: evidenceURI,
     evidenceHash,
+    chainId: null,
     validationCount: 0,
     status: 0,
     txHash: "",
@@ -1303,6 +1324,7 @@ async function submitLocal(formData) {
       setSubmitButtonState("Enviando...", true);
       const receipt = await tx.wait();
       record.txHash = receipt.hash;
+      record.chainId = Number((await state.provider.getNetwork()).chainId);
       state.records.unshift(record);
       save();
       render();
@@ -1339,8 +1361,10 @@ async function loadDemoRecords() {
       actionType: demo.actionType,
       metricUnit: demo.metricUnit,
       metricValue: demo.metricValue,
+      evidenceSummary: demo.evidenceSummary,
       evidenceURI: demo.evidenceURI,
       evidenceHash: await sha256Hex(summary),
+      chainId: null,
       validationCount: demo.validationCount,
       status: demo.status,
       txHash: `demo-tx-${String(id).padStart(3, "0")}`,
@@ -1585,10 +1609,12 @@ ledgerList.addEventListener("click", (event) => {
   const certifyId = button.dataset.certify;
   const rejectId = button.dataset.reject;
   const reactivateId = button.dataset.reactivate;
+  const copyId = button.dataset.copy;
   if (validateId) validateDemo(Number(validateId));
   if (certifyId) validateDemo(Number(certifyId), true);
   if (rejectId) rejectDemo(Number(rejectId));
   if (reactivateId) reactivateDemo(Number(reactivateId));
+  if (copyId) copyHash(Number(copyId));
 });
 [searchFilter, statusFilter, metricFilter].forEach((filter) => {
   filter.addEventListener("input", render);
