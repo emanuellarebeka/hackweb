@@ -7,7 +7,7 @@
       http-equiv="Content-Security-Policy"
       content="default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self' https:; img-src 'self' data:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
     />
-    <title>ObraPrime 27 | Ledger</title>
+    <title>Ledger Essencial</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
@@ -15,9 +15,16 @@
 
     <header class="topbar">
       <div class="brand-lockup">
-        <strong>ObraPrime 27</strong>
-        <span class="theme-pill">Tema 27 - Base exclusiva</span>
-        <span data-i18n="tagline">Ledger para impermeabilização crítica e conformidade de obras</span>
+        <div class="brand-signature" aria-label="Marca do projeto">
+          <span class="brand-mark" aria-hidden="true">
+            <span class="brand-mark-core"></span>
+            <span class="brand-mark-echo"></span>
+          </span>
+          <div class="brand-copy">
+            <strong></strong>
+            <span class="theme-pill">Impacto Auditável</span>
+          </div>
+        </div>
       </div>
       <div class="topbar-actions">
         <label class="language-control">
@@ -36,15 +43,10 @@
     </header>
 
     <nav class="app-nav" aria-label="Navegação principal">
-      <button type="button" class="active" data-view-target="overview" data-i18n="navOverview">Visão geral</button>
-      <button type="button" data-view-target="register" data-i18n="navRegister">Registrar</button>
-      <button type="button" data-view-target="audit" data-i18n="navAudit">Auditar</button>
-      <button type="button" data-view-target="intelligence" data-i18n="navIntelligence">Inteligência</button>
-      <button type="button" data-view-target="verify" data-i18n="navVerify">Verificar</button>
-      <button type="button" data-view-target="method" data-i18n="navMethod">Metodologia</button>
-      <button type="button" data-view-target="game">EcoBots</button>
+      <button type="button" class="active" data-view-target="register" data-i18n="navRegister">Registrar</button>
+      <button type="button" data-view-target="audit" data-i18n="navAudit">Histórico</button>
     </nav>
-    <p id="globalStatus" class="global-status" role="status" aria-live="polite">Base Tema 27 pronta para registrar, validar e auditar execução de obra.</p>
+    <p id="globalStatus" class="global-status" role="status" aria-live="polite">Registro simples de serviços, evidências e histórico.</p>
 
     <main>
       <section class="view active" data-view="overview">
@@ -53,8 +55,8 @@
             <p class="eyebrow" data-i18n="eyebrow">Foco principal: registrar, validar e certificar impacto</p>
             <h1 data-i18n="heroTitle">Transforme contratos de impacto em provas públicas verificáveis.</h1>
             <p data-i18n="heroText">
-              Uma infraestrutura leve para registrar entregas sociais, ambientais e comunitárias,
-              validar evidências e emitir certificados auditáveis por smart contract.
+              Uma infraestrutura leve para registrar entregas de construcao civil,
+              validar evidencias e emitir certificados auditaveis por smart contract.
             </p>
             <div class="actions hero-actions">
               <button type="button" data-view-target="register" data-i18n="startRegister">Registrar nova ação</button>
@@ -72,7 +74,7 @@
           <article>
             <span>1</span>
             <strong>Registrar</strong>
-            <p>Ação, métrica, território e evidência.</p>
+            <p>Servico, metrico, contrato e evidencia.</p>
           </article>
           <article>
             <span>2</span>
@@ -126,52 +128,50 @@
             <span>1</span>
             <div>
               <h2 data-i18n="newRecord">Novo registro</h2>
-              <p data-i18n="newRecordHelp">Preencha a ação realizada e anexe uma referência de evidência.</p>
+              <p data-i18n="newRecordHelp">Preencha e registre.</p>
             </div>
           </div>
           <label>
             <span data-i18n="territoryLabel">Contrato ou território</span>
-            <input name="territory" value="Hospital Publico Central - Bloco B" required />
-            <small data-i18n="territoryHelp">Exemplo: nome do contrato, bairro, escola, secretaria ou campanha.</small>
+            <input name="territory" placeholder="Ex.: Escola Municipal - Bloco A" required />
           </label>
           <label>
             <span data-i18n="actionTypeLabel">Tipo de ação</span>
-            <select name="actionType">
-              <option>Impermeabilização crítica de cobertura</option>
-              <option>Correção de pontos de infiltração</option>
-              <option>Inspeção preventiva de junta estrutural</option>
-              <option>Reforço localizado em área técnica</option>
-              <option>Entrega auditável de pacote de reforma</option>
+            <select name="actionType" required>
+              <option value="" selected disabled>Selecione o tipo de serviço</option>
             </select>
           </label>
           <div class="inline-fields">
             <label>
-              <span data-i18n="metricLabel">Métrica</span>
+              <span data-i18n="metricLabel">Unidade</span>
               <select name="metricUnit">
-                <option value="kg_residuo_removido">m² tratados</option>
-                <option value="pontos_criticos_tratados">pontos de infiltração sanados</option>
-                <option value="familias_alcancadas">unidades protegidas</option>
-                <option value="horas_voluntarias">horas técnicas mobilizadas</option>
+                <option value="metro_quadrado">m²</option>
+                <option value="metro_linear">m</option>
+                <option value="metro_cubico">m³</option>
+                <option value="unidade_item">unidade</option>
+                <option value="ponto_item">ponto</option>
+                <option value="conjunto_item">conjunto</option>
+                <option value="quilograma_item">kg</option>
+                <option value="hora_tecnica">hora</option>
               </select>
             </label>
             <label>
               <span data-i18n="valueLabel">Valor</span>
-              <input name="metricValue" type="number" min="1" value="140" required />
+              <input name="metricValue" type="number" min="0" step="any" inputmode="decimal" placeholder="Ex.: 120,5" required />
             </label>
           </div>
           <label>
             <span data-i18n="evidenceLinkLabel">Link da evidência</span>
-            <input name="evidenceURI" value="ipfs://bafy-obraprime27-hospital-demo" required />
-            <small data-i18n="evidenceLinkHelp">Pode ser IPFS, pasta pública, repositório documental ou link de auditoria.</small>
+            <input name="evidenceURI" placeholder="Ex.: ipfs://... ou https://... (opcional)" />
           </label>
           <label>
             <span data-i18n="evidenceSummaryLabel">Resumo da evidência</span>
-            <textarea name="evidenceSummary" required>Laudo técnico, relatório fotográfico, medição executada e validação do engenheiro responsável e do fiscal do contrato.</textarea>
+            <textarea name="evidenceSummary" placeholder="Descreva resumidamente o que foi executado." required></textarea>
           </label>
           <div class="actions">
             <button type="submit" data-i18n="submitImpact">Registrar impacto</button>
             <button id="seedDemo" type="button" class="secondary" data-i18n="loadExample">Ver exemplo pronto</button>
-            <button type="button" class="ghost" data-view-target="audit" data-i18n="goAudit">Ir para auditoria</button>
+            <button type="button" class="ghost" data-view-target="audit" data-i18n="goAudit">Ver histórico</button>
           </div>
           <p id="walletStatus" class="status" role="status" aria-live="polite">
             Modo demonstração ativo. Conecte a MetaMask para verificar sua carteira; após o deploy, o envio on-chain será habilitado.
@@ -185,8 +185,8 @@
             <div class="section-title compact">
               <span>2</span>
               <div>
-                <h2 data-i18n="auditableHistory">Histórico auditável</h2>
-                <p data-i18n="auditableHistoryHelp">Valide registros e acompanhe certificados emitidos.</p>
+                <h2 data-i18n="auditableHistory">Histórico</h2>
+                <p data-i18n="auditableHistoryHelp">Acompanhe e valide registros.</p>
               </div>
             </div>
             <div class="actions">
@@ -209,7 +209,7 @@
                 <option value="3">Rejeitado</option>
               </select>
             </label>
-            <label>
+            <label class="is-secondary-filter">
               <span data-i18n="metricLabel">Métrica</span>
               <select id="metricFilter">
                 <option value="all">Todas</option>
@@ -245,7 +245,7 @@
               </div>
               <div>
                 <strong id="benefitEstimate">R$ 0</strong>
-                <p data-i18n="socialValue">Valor social estimado</p>
+                <p data-i18n="socialValue">Valor patrimonial protegido</p>
               </div>
             </div>
           </article>
@@ -255,7 +255,7 @@
               <span>4</span>
               <div>
                 <h2 data-i18n="auditableRanking">Ranking auditável</h2>
-                <p data-i18n="auditableRankingHelp">Contratos e territórios com maior impacto validado.</p>
+                <p data-i18n="auditableRankingHelp">Contratos e ativos com maior volume validado.</p>
               </div>
             </div>
             <ol id="rankingList" class="ranking-list"></ol>
@@ -286,42 +286,42 @@
       </section>
 
       <section class="view" data-view="method">
-        <section class="method-panel wide-panel" aria-label="Metodologia de impacto">
+        <section class="method-panel wide-panel" aria-label="Metodo de conformidade construtiva">
           <div class="section-title compact">
             <span>IMM</span>
             <div>
-              <h2 data-i18n="methodTitle">Metodologia de impacto</h2>
-              <p data-i18n="methodText">O fluxo combina Teoria da Mudança, IRIS+ e SROI: definir a ação, medir evidência, validar, certificar e usar os dados para decisão.</p>
+              <h2 data-i18n="methodTitle">Metodo de confianca construtiva</h2>
+              <p data-i18n="methodText">O fluxo combina governanca de obra, prova tecnica, verificacao digital e certificacao auditavel para registrar, validar, certificar e auditar.</p>
             </div>
           </div>
           <ul class="reference-list">
             <li>
-              <strong>Teoria da Mudança</strong>
-              <span>Serviço -> evidência -> validação -> certificado -> decisão. Na base ObraPrime 27, cada registro declara escopo, métrica e prova técnica.</span>
+              <strong>Fluxo de conformidade de obra</strong>
+              <span>Servico -> evidencia -> validacao -> certificado -> decisao. Cada registro declara escopo, metrica e prova tecnica.</span>
             </li>
             <li>
               <strong>W3C Verifiable Credentials 2.0</strong>
-              <span>Base para pensar comprovantes digitais verificáveis por emissor, titular e verificador.</span>
+              <span>Base para comprovantes digitais verificaveis por emissor, titular e verificador.</span>
               <a href="https://www.w3.org/TR/vc-data-model/" target="_blank" rel="noreferrer">w3.org/TR/vc-data-model</a>
             </li>
             <li>
-              <strong>GIIN IRIS+</strong>
-              <span>Referência para padronizar métricas de impacto e tornar resultados comparáveis.</span>
-              <a href="https://iris.thegiin.org/standards/" target="_blank" rel="noreferrer">iris.thegiin.org/standards</a>
+              <strong>ABNT NBR 5674</strong>
+              <span>Referencia para manutencao de edificacoes e rastreabilidade de execucao.</span>
+              <a href="https://www.abntcatalogo.com.br/" target="_blank" rel="noreferrer">abntcatalogo.com.br</a>
             </li>
             <li>
-              <strong>Social Value International</strong>
-              <span>Base conceitual para medir e gerir valor social com transparência.</span>
-              <a href="https://www.socialvalueint.org/standards-and-guidance" target="_blank" rel="noreferrer">socialvalueint.org/standards-and-guidance</a>
+              <strong>ABNT NBR 16280</strong>
+              <span>Referencia para reformas, governanca de intervencao e responsabilidades tecnicas.</span>
+              <a href="https://www.abntcatalogo.com.br/" target="_blank" rel="noreferrer">abntcatalogo.com.br</a>
             </li>
             <li>
-              <strong>UK Social Value Model</strong>
-              <span>Referência internacional de valor social aplicado à contratação pública.</span>
-              <a href="https://www.crowncommercial.gov.uk/social-value/what-is-social-value" target="_blank" rel="noreferrer">crowncommercial.gov.uk/social-value</a>
+              <strong>ABNT NBR 17170</strong>
+              <span>Base para leitura de garantias e conformidade em edificacoes.</span>
+              <a href="https://www.abntcatalogo.com.br/" target="_blank" rel="noreferrer">abntcatalogo.com.br</a>
             </li>
             <li>
               <strong>OpenZeppelin Access Control</strong>
-              <span>Referência técnica para controle de permissões em smart contracts.</span>
+              <span>Referencia tecnica para controle de permissoes e governanca em smart contracts.</span>
               <a href="https://docs.openzeppelin.com/contracts/4.x/access-control" target="_blank" rel="noreferrer">docs.openzeppelin.com/contracts/4.x/access-control</a>
             </li>
           </ul>
@@ -333,28 +333,28 @@
       </section>
 
       <section class="view" data-view="game">
-        <section class="game-panel wide-panel" aria-label="Jogo educativo EcoBots">
+        <section class="game-panel wide-panel" aria-label="Jogo de treinamento EcoBots para construcao civil">
           <div class="section-title compact">
             <span>BOT</span>
             <div>
               <h2>EcoBots Lab</h2>
-              <p>Um jogo leve para treinar pensamento ambiental: mova o robô, restaure pontos críticos e construa um território mais limpo.</p>
+              <p>Um jogo leve para treinar leitura de canteiro: mova o robo, elimine riscos tecnicos e monte uma trilha de conformidade de obra.</p>
             </div>
           </div>
 
           <div class="game-explainer">
             <strong>Por que este jogo existe?</strong>
             <p>
-              O EcoBots Lab transforma educação ambiental em uma experiência prática: cada movimento ensina prevenção,
-              cuidado com recursos e restauração territorial. Ele não usa aposta, moeda, pressão ou recompensa viciante.
-              O objetivo é construir consciência e, ao final, registrar o aprendizado como impacto educativo auditável.
+              O EcoBots Lab transforma treinamento de obra em experiencia pratica: cada movimento representa uma vistoria
+              de impermeabilizacao, drenagem, documentacao e seguranca. Ele nao usa aposta, moeda ou recompensa viciante.
+              O objetivo e provar aprendizado tecnico e, ao final, registrar um comprovante auditavel que pode gerar desconto no certificado.
             </p>
           </div>
 
           <div class="game-layout">
             <div>
-              <div id="gameBoard" class="game-board" role="grid" aria-label="Mapa ambiental com robô, resíduos, árvores e energia limpa"></div>
-              <div class="game-controls" aria-label="Controles do robô">
+              <div id="gameBoard" class="game-board" role="grid" aria-label="Mapa de obra com robo, infiltracoes, checklists e pontos de seguranca"></div>
+              <div class="game-controls" aria-label="Controles do robo">
                 <button type="button" data-move="up">↑</button>
                 <button type="button" data-move="left">←</button>
                 <button type="button" data-move="down">↓</button>
@@ -364,20 +364,20 @@
 
             <aside class="game-side">
               <strong>Missão</strong>
-              <p>Restaure o mapa sem pressa. Cada ação ensina prevenção, cuidado e responsabilidade.</p>
+              <p>Feche os pontos criticos do canteiro. Cada acao reforca prevencao, rastreabilidade e responsabilidade tecnica.</p>
               <dl>
-                <dt>Pontos de impacto</dt>
+                <dt>Pontos de conformidade</dt>
                 <dd id="gameScore">0</dd>
-                <dt>Energia do robô</dt>
+                <dt>Energia da equipe</dt>
                 <dd id="gameEnergy">12</dd>
-                <dt>Construção</dt>
+                <dt>Nivel da trilha</dt>
                 <dd id="gameBuild">Base verde inicial</dd>
               </dl>
               <div class="actions">
-                <button id="restartGame" type="button">Reiniciar missão</button>
-                <button id="recordGameImpact" type="button" class="secondary">Registrar impacto do jogo</button>
+                <button id="restartGame" type="button">Reiniciar missao</button>
+                <button id="recordGameImpact" type="button" class="secondary">Registrar prova do treino</button>
               </div>
-              <p id="gameStatus" class="status" role="status" aria-live="polite">Use as setas do teclado ou os botões para mover o robô.</p>
+              <p id="gameStatus" class="status" role="status" aria-live="polite">Use as setas do teclado ou os botoes para mover o robo.</p>
             </aside>
           </div>
         </section>
@@ -388,5 +388,6 @@
     <script src="runtime-config.js"></script>
     <script src="vendor/ethers.umd.min.js"></script>
     <script src="app.js"></script>
+    <script src="overrides.js"></script>
   </body>
 </html>

@@ -8,9 +8,38 @@ const CONTRACT_ABI = [
 ];
 
 const statusNames = ["Enviado", "Validado", "Certificado", "Rejeitado"];
+const ONCHAIN_METRIC_DECIMALS = 3;
+
+function normalizeMetricValueInput(value) {
+  const normalized = String(value ?? "").trim().replace(",", ".");
+  if (!/^\d+(?:\.\d+)?$/.test(normalized)) {
+    throw new Error("Informe um valor numerico valido.");
+  }
+  const [, fraction = ""] = normalized.split(".");
+  if (fraction.length > ONCHAIN_METRIC_DECIMALS) {
+    throw new Error("Use no maximo 3 casas decimais.");
+  }
+  return normalized;
+}
+
+function toOnchainMetricValue(value) {
+  const normalized = normalizeMetricValueInput(value);
+  const [whole, fraction = ""] = normalized.split(".");
+  const paddedFraction = (fraction + "0".repeat(ONCHAIN_METRIC_DECIMALS)).slice(0, ONCHAIN_METRIC_DECIMALS);
+  return BigInt(`${whole}${paddedFraction}`);
+}
+
+function getReadableErrorMessage(error) {
+  const message = String(error?.shortMessage || error?.reason || error?.message || "Erro ao registrar.");
+  if (message.includes("ACTION_REJECTED") || message.includes("user rejected")) return "Transacao cancelada na carteira.";
+  if (message.includes("insufficient funds")) return "Carteira sem saldo para enviar a transacao.";
+  if (message.includes("network")) return "Rede indisponivel para envio no momento.";
+  return message;
+}
+
 const TRANSLATIONS = {
   pt: {
-    tagline: "Ledger para impermeabilização crítica e conformidade de obras",
+    tagline: "",
     languageLabel: "Idioma",
     connectWallet: "Conectar carteira",
     simpleMode: "Modo simples",
@@ -24,7 +53,7 @@ const TRANSLATIONS = {
     startRegister: "Registrar nova operação",
     viewHistory: "Ver histórico",
     goAudit: "Ir para auditoria",
-    eyebrow: "Tema 27: construção civil auditável para setor público e privado",
+    eyebrow: "Construção civil auditável para setor público e privado",
     heroTitle: "Converta execução de obra em prova técnica verificável.",
     heroText: "Uma camada exclusiva para registrar impermeabilização crítica, manutenção estrutural preventiva e conformidade de obras com evidência auditável e validação independente.",
     auditableImpact: "Execução auditável",
@@ -455,13 +484,50 @@ const metricLabels = {
   familias_alcancadas: "unidades protegidas",
   horas_voluntarias: "horas técnicas mobilizadas"
 };
+const DEMO_RECORDS_STORAGE_KEY = "obraprime27-records-demo-v2";
+const REAL_RECORDS_STORAGE_PREFIX = "obraprime27-records-real-v2";
+const RECORDS_STORAGE_VERSION_KEY = "obraprime27-records-version";
+const RECORDS_STORAGE_VERSION = "simple-v3";
+
+function getRecordsStorageKey(account = "") {
+  return account ? `${REAL_RECORDS_STORAGE_PREFIX}:${String(account).toLowerCase()}` : DEMO_RECORDS_STORAGE_KEY;
+}
+
+function getActiveRecordsStorageKey() {
+  return getRecordsStorageKey(state.account);
+}
+
+function loadStoredRecords(account = "") {
+  try {
+    const storedVersion = localStorage.getItem(RECORDS_STORAGE_VERSION_KEY);
+    const activeKey = getRecordsStorageKey(account);
+    if (storedVersion !== RECORDS_STORAGE_VERSION) {
+      localStorage.removeItem(DEMO_RECORDS_STORAGE_KEY);
+      localStorage.removeItem(activeKey);
+      localStorage.setItem(RECORDS_STORAGE_VERSION_KEY, RECORDS_STORAGE_VERSION);
+      return [];
+    }
+    return JSON.parse(localStorage.getItem(activeKey) || "[]");
+  } catch {
+    localStorage.removeItem(getActiveRecordsStorageKey());
+    localStorage.setItem(RECORDS_STORAGE_VERSION_KEY, RECORDS_STORAGE_VERSION);
+    return [];
+  }
+}
+
+function reloadRecordsForCurrentMode() {
+  state.records = loadStoredRecords();
+  save();
+  render();
+}
+
 const state = {
   account: "",
   provider: null,
   signer: null,
   contract: null,
   language: localStorage.getItem("obraprime27-language") || localStorage.getItem("civisproof-language") || localStorage.getItem("mangueproof-language") || "pt",
-  records: JSON.parse(localStorage.getItem("obraprime27-records-v2") || "[]")
+  records: loadStoredRecords()
 };
 
 const form = document.querySelector("#impactForm");
@@ -487,9 +553,11 @@ const proofInput = document.querySelector("#proofInput");
 const proofResult = document.querySelector("#proofResult");
 const verifyProofButton = document.querySelector("#verifyProof");
 const clearProofButton = document.querySelector("#clearProof");
+const topbar = document.querySelector(".topbar");
 const viewButtons = document.querySelectorAll("[data-view-target]");
 const views = document.querySelectorAll("[data-view]");
 const toastRegion = document.querySelector("#toastRegion");
+const submitImpactButton = form?.querySelector('button[type="submit"]');
 const gameBoard = document.querySelector("#gameBoard");
 const gameScore = document.querySelector("#gameScore");
 const gameEnergy = document.querySelector("#gameEnergy");
@@ -645,6 +713,12 @@ function showToast(message, type = "success") {
   }, 4200);
 }
 
+function setSubmitButtonState(label, disabled) {
+  if (!submitImpactButton) return;
+  submitImpactButton.disabled = disabled;
+  submitImpactButton.textContent = label;
+}
+
 function applyTranslations() {
   document.documentElement.lang = state.language === "zh" ? "zh-CN" : state.language;
   document.querySelectorAll("[data-i18n]").forEach((element) => {
@@ -661,17 +735,24 @@ function applyTranslations() {
     metricFilter.options[index + 1].textContent = metric;
     form.elements.metricUnit.options[index].textContent = metric;
   });
-  t("actionTypes").forEach((action, index) => {
-    form.elements.actionType.options[index].textContent = action;
-  });
+  const actionField = form.elements.actionType;
+  if (actionField?.tagName === "SELECT" && actionField.options.length > 1) {
+    t("actionTypes").forEach((action, index) => {
+      if (actionField.options[index + 1]) {
+        actionField.options[index + 1].textContent = action;
+      }
+    });
+  }
   if (!state.account) {
     connectWalletButton.textContent = t("connectWallet");
-    notify(t("demoMode"));
   }
   render();
 }
 
 function setView(viewName) {
+  if (!["register", "audit"].includes(viewName)) {
+    viewName = "register";
+  }
   if (document.body.classList.contains("simple") && !["overview", "register", "audit"].includes(viewName)) {
     viewName = "overview";
   }
@@ -703,20 +784,6 @@ function escapeHtml(value) {
     };
     return entities[character];
   });
-}
-
-function hashText(value) {
-  let hash = 0;
-  const text = String(value);
-  for (let index = 0; index < text.length; index += 1) {
-    hash = (hash << 5) - hash + text.charCodeAt(index);
-    hash |= 0;
-  }
-  return Math.abs(hash);
-}
-
-function getRecordColorClass(value) {
-  return `record-color-${hashText(value) % 8}`;
 }
 
 function getInjectedProvider() {
@@ -756,7 +823,8 @@ function stableStringify(value) {
 }
 
 function save() {
-  localStorage.setItem("obraprime27-records-v2", JSON.stringify(state.records));
+  localStorage.setItem(RECORDS_STORAGE_VERSION_KEY, RECORDS_STORAGE_VERSION);
+  localStorage.setItem(getActiveRecordsStorageKey(), JSON.stringify(state.records));
 }
 
 function addHistory(record, label) {
@@ -788,7 +856,7 @@ function formatDateTime(value) {
 
 async function buildProof(record) {
   const credential = {
-    type: "ObraPrime27Credential",
+    type: "LedgerCredential",
     version: "1.0",
     actionId: record.id,
     contractOrTerritory: record.territory,
@@ -800,7 +868,7 @@ async function buildProof(record) {
     evidenceHash: record.evidenceHash,
     transactionHash: record.txHash || "demonstração-local",
     methodology: ["Theory of Change", "IRIS+", "SROI", "W3C Verifiable Credentials"],
-    issuedBy: "ObraPrime 27 Ledger",
+    issuedBy: "Ledger",
     issuedAt: new Date().toISOString()
   };
 
@@ -1023,29 +1091,47 @@ async function updateWalletStatus() {
 
   const networkLabel = await getNetworkLabel(state.provider);
   connectWalletButton.textContent = shortenAddress(state.account);
+  connectWalletButton.title = "Clique para desconectar";
+  reloadRecordsForCurrentMode();
   notify(CONTRACT_ADDRESS
-    ? `Carteira conectada: ${shortenAddress(state.account)} em ${networkLabel}. Envio on-chain habilitado.`
-    : `Carteira conectada: ${shortenAddress(state.account)} em ${networkLabel}. O modo demonstração continua ativo até informar o endereço do contrato em app.js.`);
+    ? `Carteira conectada: ${shortenAddress(state.account)} em ${networkLabel}. Lista real carregada.`
+    : `Carteira conectada: ${shortenAddress(state.account)} em ${networkLabel}. Lista da carteira carregada.`);
+}
+
+function disconnectWallet(options = {}) {
+  state.account = "";
+  state.provider = null;
+  state.signer = null;
+  state.contract = null;
+  connectWalletButton.disabled = false;
+  connectWalletButton.textContent = t("connectWallet");
+  connectWalletButton.title = "";
+  reloadRecordsForCurrentMode();
+  if (!options.silent) {
+    notify("Carteira desconectada. Lista de teste carregada.");
+  }
 }
 
 function renderRecord(record) {
   const localizedStatuses = t("statuses");
   const status = localizedStatuses[record.status] || localizedStatuses[0] || statusNames[0];
   const metric = metricLabels[record.metricUnit] || record.metricUnit;
-  const classes = ["record", record.status === 2 ? "certified" : "", record.status === 3 ? "rejected" : ""]
+  const history = (record.history || [])
+    .map((entry) => `<li>${escapeHtml(entry.label || entry.message || "")}</li>`)
+    .join("");
+  const steps = [
+    { label: "Enviado", done: true },
+    { label: "Validado", done: record.validationCount > 0 || record.status >= 1 },
+    { label: "Certificado", done: record.status === 2 }
+  ]
+    .map((step) => `<div class="audit-step${step.done ? " done" : ""}">${escapeHtml(step.label)}</div>`)
+    .join("");
+  const classes = ["record", record.status === 1 ? "validated" : "", record.status === 2 ? "certified" : "", record.status === 3 ? "rejected" : ""]
     .filter(Boolean)
     .join(" ");
-  const recordColorClass = getRecordColorClass(record.territory);
-  const steps = localizedStatuses.map((step, index) => {
-    const done = record.status === 3 ? index === 0 || index === 3 : index <= record.status;
-    return `<span class="audit-step ${done ? "done" : ""}">${index + 1}. ${escapeHtml(step)}</span>`;
-  });
-  const history = getRecordHistory(record)
-    .map((item) => `<li>${escapeHtml(formatDateTime(item.at))} - ${escapeHtml(item.label)}</li>`)
-    .join("");
 
   return `
-    <article class="${classes} ${recordColorClass}">
+    <article class="${classes}">
       <div class="record-topline">
         <div>
           <h3>#${record.id} ${escapeHtml(record.actionType)}</h3>
@@ -1063,17 +1149,14 @@ function renderRecord(record) {
       </dl>
       ${
         record.showPath
-          ? `<div class="audit-trail"><strong>${t("auditPath")}</strong><div class="audit-steps">${steps.join("")}</div><ol class="event-log">${history}</ol></div>`
+          ? `<div class="audit-trail"><strong>${t("auditPath")}</strong><div class="audit-steps">${steps}</div><ol class="event-log">${history}</ol></div>`
           : ""
       }
       <div class="record-actions">
-        <button type="button" data-validate="${record.id}">${t("validate")}</button>
-        <button type="button" class="secondary" data-certify="${record.id}">${t("certify")}</button>
-        <button type="button" class="ghost" data-reject="${record.id}">${t("reject")}</button>
-        <button type="button" class="ghost" data-reactivate="${record.id}">${t("reactivate")}</button>
-        <button type="button" class="ghost" data-copy="${record.id}">${t("copyHash")}</button>
-        <button type="button" class="ghost" data-proof="${record.id}">${t("copyProof")}</button>
-        <button type="button" class="ghost" data-path="${record.id}">${record.showPath ? t("hidePath") : t("showPath")}</button>
+        ${record.status === 0 ? `<button type="button" data-validate="${record.id}">${t("validate")}</button>` : ""}
+        ${record.status === 1 ? `<button type="button" class="secondary" data-certify="${record.id}">${t("certify")}</button>` : ""}
+        ${(record.status === 0 || record.status === 1) ? `<button type="button" class="ghost" data-reject="${record.id}">${t("reject")}</button>` : ""}
+        ${record.status === 3 ? `<button type="button" class="ghost" data-reactivate="${record.id}">${t("reactivate")}</button>` : ""}
       </div>
     </article>
   `;
@@ -1140,6 +1223,11 @@ function renderRanking() {
 }
 
 async function connectWallet() {
+  if (state.account) {
+    disconnectWallet();
+    return;
+  }
+
   const injectedProvider = getInjectedProvider();
 
   if (!injectedProvider || typeof injectedProvider.request !== "function") {
@@ -1170,26 +1258,34 @@ async function connectWallet() {
 
     await updateWalletStatus();
   } catch (error) {
+    state.account = "";
+    state.provider = null;
+    state.signer = null;
+    state.contract = null;
     const rejected = error.code === 4001 || error.info?.error?.code === 4001;
     notify(rejected
       ? "Conexão cancelada na MetaMask. Clique novamente quando quiser autorizar."
       : `Não foi possível conectar a carteira: ${error.message}`);
     connectWalletButton.textContent = "Conectar carteira";
+    connectWalletButton.title = "";
   } finally {
     connectWalletButton.disabled = false;
   }
 }
 
 async function submitLocal(formData) {
-  const summary = `${formData.get("territory")}|${formData.get("actionType")}|${formData.get("metricUnit")}|${formData.get("metricValue")}|${formData.get("evidenceURI")}|${formData.get("evidenceSummary")}`;
+  const evidenceURI = String(formData.get("evidenceURI") || "").trim();
+  const normalizedEvidenceURI = evidenceURI || "sem-link";
+  const metricValueText = normalizeMetricValueInput(formData.get("metricValue"));
+  const summary = `${formData.get("territory")}|${formData.get("actionType")}|${formData.get("metricUnit")}|${metricValueText}|${normalizedEvidenceURI}|${formData.get("evidenceSummary")}`;
   const evidenceHash = await sha256Hex(summary);
   const record = {
     id: getNextRecordId(),
     territory: formData.get("territory"),
     actionType: formData.get("actionType"),
     metricUnit: formData.get("metricUnit"),
-    metricValue: Number(formData.get("metricValue")),
-    evidenceURI: formData.get("evidenceURI"),
+    metricValue: Number(metricValueText),
+    evidenceURI: evidenceURI,
     evidenceHash,
     validationCount: 0,
     status: 0,
@@ -1200,14 +1296,34 @@ async function submitLocal(formData) {
   addHistory(record, "Registro criado com hash verificável");
 
   if (state.contract) {
-    const tx = await state.contract.submitAction(record.territory, record.actionType, record.metricUnit, record.metricValue, record.evidenceHash, record.evidenceURI);
-    const receipt = await tx.wait();
-    record.txHash = receipt.hash;
+    try {
+      setSubmitButtonState("Aguardando carteira...", true);
+      const onchainMetricValue = toOnchainMetricValue(metricValueText);
+      const tx = await state.contract.submitAction(record.territory, record.actionType, record.metricUnit, onchainMetricValue, record.evidenceHash, normalizedEvidenceURI);
+      setSubmitButtonState("Enviando...", true);
+      const receipt = await tx.wait();
+      record.txHash = receipt.hash;
+      state.records.unshift(record);
+      save();
+      render();
+      return { persistedOnChain: true };
+    } catch (error) {
+      if (error?.code === "ACTION_REJECTED") {
+        throw new Error("Transacao cancelada na carteira.");
+      }
+      record.txError = getReadableErrorMessage(error);
+      addHistory(record, "Envio on-chain indisponivel; registro mantido localmente");
+      state.records.unshift(record);
+      save();
+      render();
+      return { persistedOnChain: false, fallbackReason: record.txError };
+    }
   }
 
   state.records.unshift(record);
   save();
   render();
+  return { persistedOnChain: false };
 }
 
 async function loadDemoRecords() {
@@ -1351,6 +1467,12 @@ function toggleSimpleMode() {
   const isSimple = document.body.classList.contains("simple");
   simpleModeButton.textContent = isSimple ? t("technicalMode") : t("simpleMode");
   localStorage.setItem("obraprime27-simple-mode", isSimple ? "1" : "0");
+  syncTopbarHeight();
+}
+
+function syncTopbarHeight() {
+  if (!topbar) return;
+  document.documentElement.style.setProperty("--topbar-height", `${Math.ceil(topbar.offsetHeight)}px`);
 }
 
 function toggleAuditPath(id) {
@@ -1402,13 +1524,22 @@ async function copyHash(id) {
 
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
+  setSubmitButtonState(state.contract ? "Aguardando carteira..." : "Registrando...", true);
   notify("Gerando hash da evidência e registrando...");
   try {
-    await submitLocal(new FormData(form));
-    notify(state.contract ? "Registro enviado para a blockchain." : "Registro criado em modo demonstração com hash verificável.");
+    const result = await submitLocal(new FormData(form));
+    if (result?.persistedOnChain) {
+      notify("Registro enviado para a blockchain.");
+    } else if (result?.fallbackReason) {
+      notify(`Registro salvo localmente. Blockchain indisponivel: ${result.fallbackReason}`, "warning");
+    } else {
+      notify("Registro criado em modo demonstração com hash verificável.");
+    }
     setView("audit");
   } catch (error) {
     notify(`Falha no registro: ${error.message}`);
+  } finally {
+    setSubmitButtonState(t("submitImpact"), false);
   }
 });
 
@@ -1424,13 +1555,12 @@ const initialProvider = getInjectedProvider();
 if (initialProvider && typeof initialProvider.on === "function") {
   initialProvider.on("accountsChanged", async (accounts) => {
     state.account = accounts[0] || "";
-    state.signer = state.account && state.provider ? await state.provider.getSigner() : null;
-    state.contract = CONTRACT_ADDRESS && state.signer && window.ethers ? new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, state.signer) : null;
     if (state.account) {
+      state.signer = state.provider ? await state.provider.getSigner() : null;
+      state.contract = CONTRACT_ADDRESS && state.signer && window.ethers ? new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, state.signer) : null;
       await updateWalletStatus();
     } else {
-      connectWalletButton.textContent = "Conectar carteira";
-      notify("Carteira desconectada. O modo demonstração continua ativo.");
+      disconnectWallet({ silent: true });
     }
   });
 
@@ -1455,16 +1585,10 @@ ledgerList.addEventListener("click", (event) => {
   const certifyId = button.dataset.certify;
   const rejectId = button.dataset.reject;
   const reactivateId = button.dataset.reactivate;
-  const copyId = button.dataset.copy;
-  const proofId = button.dataset.proof;
-  const pathId = button.dataset.path;
   if (validateId) validateDemo(Number(validateId));
   if (certifyId) validateDemo(Number(certifyId), true);
   if (rejectId) rejectDemo(Number(rejectId));
   if (reactivateId) reactivateDemo(Number(reactivateId));
-  if (copyId) copyHash(Number(copyId));
-  if (proofId) copyProof(Number(proofId));
-  if (pathId) toggleAuditPath(Number(pathId));
 });
 [searchFilter, statusFilter, metricFilter].forEach((filter) => {
   filter.addEventListener("input", render);
@@ -1475,6 +1599,7 @@ languageSelect.addEventListener("change", () => {
   state.language = languageSelect.value;
   localStorage.setItem("obraprime27-language", state.language);
   applyTranslations();
+  syncTopbarHeight();
 });
 simpleModeButton.addEventListener("click", toggleSimpleMode);
 refreshMethodologyButton.addEventListener("click", refreshMethodology);
@@ -1497,6 +1622,7 @@ document.addEventListener("keydown", (event) => {
 });
 restartGameButton.addEventListener("click", startGame);
 recordGameImpactButton.addEventListener("click", recordGameImpact);
+window.addEventListener("resize", syncTopbarHeight);
 if (
   localStorage.getItem("obraprime27-simple-mode") === "1" ||
   localStorage.getItem("civisproof-simple-mode") === "1" ||
@@ -1512,8 +1638,9 @@ setView(
   localStorage.getItem("obraprime27-active-view") ||
   localStorage.getItem("civisproof-active-view") ||
   localStorage.getItem("mangueproof-active-view") ||
-  "overview"
+  "register"
 );
 
 applyTranslations();
+syncTopbarHeight();
 startGame();

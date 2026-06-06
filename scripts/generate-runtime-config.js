@@ -13,6 +13,22 @@ const runtimeConfig = {
 };
 
 const fileContents = `window.__OBRAPRIME27_CONFIG__ = ${JSON.stringify(runtimeConfig, null, 2)};\n`;
-fs.writeFileSync(runtimeConfigPath, fileContents, "utf8");
+const existingContents = fs.existsSync(runtimeConfigPath)
+  ? fs.readFileSync(runtimeConfigPath, "utf8")
+  : "";
 
-console.log(`Runtime config generated at ${runtimeConfigPath}`);
+if (existingContents === fileContents) {
+  console.log(`Runtime config already up to date at ${runtimeConfigPath}`);
+  process.exit(0);
+}
+
+try {
+  fs.writeFileSync(runtimeConfigPath, fileContents, "utf8");
+  console.log(`Runtime config generated at ${runtimeConfigPath}`);
+} catch (error) {
+  if (error.code === "EPERM" && existingContents) {
+    console.warn(`Runtime config locked, keeping existing file at ${runtimeConfigPath}`);
+    process.exit(0);
+  }
+  throw error;
+}

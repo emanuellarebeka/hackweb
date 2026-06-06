@@ -21,10 +21,7 @@ const requiredActions = [
   "data-validate",
   "data-certify",
   "data-reject",
-  "data-reactivate",
-  "data-copy",
-  "data-proof",
-  "data-path"
+  "data-reactivate"
 ];
 
 const requiredFunctions = [
@@ -33,9 +30,6 @@ const requiredFunctions = [
   "validateDemo",
   "rejectDemo",
   "reactivateDemo",
-  "copyHash",
-  "copyProof",
-  "toggleAuditPath",
   "verifyProof",
   "showToast"
 ];

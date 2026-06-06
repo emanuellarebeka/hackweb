@@ -1,0 +1,22 @@
+[
+  { "id": "alvenaria", "label": "Alvenaria" },
+  { "id": "cobertura", "label": "Cobertura" },
+  { "id": "concreto", "label": "Concreto" },
+  { "id": "drenagem", "label": "Drenagem" },
+  { "id": "esquadrias", "label": "Esquadrias" },
+  { "id": "estrutura", "label": "Estrutura" },
+  { "id": "fundacoes", "label": "Fundacoes" },
+  { "id": "hidraulica", "label": "Instalacoes hidraulicas" },
+  { "id": "eletrica", "label": "Instalacoes eletricas" },
+  { "id": "impermeabilizacao", "label": "Impermeabilizacao" },
+  { "id": "incendio", "label": "Prevencao e combate a incendio" },
+  { "id": "pavimentacao", "label": "Pavimentacao" },
+  { "id": "pintura", "label": "Pintura" },
+  { "id": "pisos_revestimentos", "label": "Pisos e revestimentos" },
+  { "id": "reforma_geral", "label": "Reforma geral" },
+  { "id": "serralheria", "label": "Serralheria" },
+  { "id": "sinalizacao", "label": "Sinalizacao" },
+  { "id": "telhado", "label": "Telhado" },
+  { "id": "terraplenagem", "label": "Terraplenagem" },
+  { "id": "urbanizacao", "label": "Urbanizacao" }
+]

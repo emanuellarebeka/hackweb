@@ -17,7 +17,7 @@ describe("MangueProofImpactLedger", function () {
       ledger.connect(citizen).submitAction(
         "Hospital Público Central - Bloco B",
         "Impermeabilização crítica de cobertura",
-        "kg_residuo_removido",
+        "area_liberada_m2",
         140,
         evidenceHash,
         "ipfs://bafy-obraprime27-demo"
@@ -38,7 +38,7 @@ describe("MangueProofImpactLedger", function () {
     await ledger.connect(citizen).submitAction(
       "Condomínio Prime Atlante - Torre Norte",
       "Correção de pontos de infiltração",
-      "pontos_criticos_tratados",
+      "horas_tecnicas_mobilizadas",
       3,
       evidenceHash,
       "ipfs://bafy-obraprime27-certificado"
@@ -61,7 +61,7 @@ describe("MangueProofImpactLedger", function () {
     await ledger.connect(citizen).submitAction(
       "Escola Técnica Municipal - Bloco A",
       "Inspeção preventiva de junta estrutural",
-      "familias_alcancadas",
+      "pontos_criticos_sanados",
       80,
       evidenceHash,
       "ipfs://demo"
