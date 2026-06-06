@@ -662,8 +662,7 @@ textarea {
 
 #walletStatus,
 .section-title p,
-.audit-trail,
-.record-actions .ghost {
+.audit-trail {
   display: none !important;
 }
 
